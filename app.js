@@ -1,5 +1,5 @@
-// MONGO CONNECTION = mongodb+srv://owi:<password>@cluster0-7cerh.mongodb.net/admin?retryWrites=true&w=majority
-// USER (owi) PW = KW1vE2szoTp0EeGY
+// MONGO CONNECTION = mongodb+srv://owiwi:<password>@cluster0-7cerh.mongodb.net/admin?retryWrites=true&w=majority
+// USER (owi) PW = b4CG56I70A68QaoP
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -8,7 +8,9 @@ const Thing = require('./models/thing');
 
 const app = express();
 
-mongoose.connect('mongodb+srv://owi:KW1vE2szoTp0EeGY@cluster0-7cerh.mongodb.net/admin?retryWrites=true&w=majority')
+mongoose.set('useUnifiedTopology', true);
+
+mongoose.connect('mongodb+srv://owiwi:b4CG56I70A68QaoP@cluster0-7cerh.mongodb.net/uba?retryWrites=true&w=majority', { useNewUrlParser: true })
   .then(() => {
     console.log('Successfully connected to MongoDB');
   })
@@ -66,6 +68,42 @@ app.get('/api/stuff/:id', (req, res, next) => {
   );
 });
 
+app.put('/api/stuff/:id', (req, res, next) => {
+  const thing = new Thing({
+    _id: req.params.id,
+    title: req.body.title,
+    description: req.body.description,
+    imageUrl: req.body.imageUrl,
+    price: req.body.price,
+    userId: req.body.userId
+  });
+  Thing.updateOne({_id: req.params.id}, thing)
+    .then(() => {
+      res.status(201).json({
+        message: 'Thing update successful!'
+      });
+    })
+    .catch((error) => {
+      res.status.json({
+        error: error
+      });
+    });
+});
+
+app.delete('/api/stuff/:id', (req, res, next) => {
+  Thing.deleteOne({_id: req.params.id})
+    .then(() => {
+      res.status(200).json({
+        message: 'thing deleted!'
+      });
+    })
+    .catch((error) => {
+      res.status(400).json({
+        error: error
+      });
+    });
+});
+
 app.use('/api/stuff', (req, res, next) => {
   // const stuff = [
   //   {
@@ -77,14 +115,15 @@ app.use('/api/stuff', (req, res, next) => {
   //     userId: 'qsomihvqios',
   //   },
   //   {
-  //     _id: 'oeihfzeomoihi',
-  //     title: 'My second thing',
-  //     description: 'All of the info about my second thing',
+  //     _id: '34343434',
+  //     title: 'My third thing',
+  //     description: 'All of the info about my third thing',
   //     imageUrl: '',
-  //     price: 2900,
+  //     price: 66900,
   //     userId: 'qsomihvqios',
   //   },
   // ];
+  // res.status(200).json(stuff);
   Thing.find()
     .then((things) => {
       res.status(201).json(things);
