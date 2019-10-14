@@ -1,12 +1,14 @@
 const Thing = require('../models/thing');
 
 exports.createThing = (req, res, next) => {
+	const url = `${req.protocol}://${req.get('host')}`;
+	req.body.thing = JSON.parse(req.body.thing);
 	const thing = new Thing({
-		title: req.body.title,
-		description: req.body.description,
-		imageUrl: req.body.imageUrl,
-		price: req.body.price,
-		userId: req.body.userId
+		title: req.body.thing.title,
+		description: req.body.thing.description,
+		imageUrl: `${url}/images/${req.file.filename}`,
+		price: req.body.thing.price,
+		userId: req.body.thing.userId
 	});
 
 	thing.save()
@@ -35,14 +37,29 @@ exports.getOneThing = (req, res, next) => {
 };
 
 exports.modifyThing = (req, res, next) => {
-	const thing = new Thing({
-		_id: req.params.id,
-		title: req.body.title,
-		description: req.body.description,
-		imageUrl: req.body.imageUrl,
-		price: req.body.price,
-		userId: req.body.userId
-	});
+	let thing = new Thing({ _id: req.params._id });
+	if (req.file) {
+		const url = `${req.protocol}://${req.get('host')}`;
+		req.body.thing = JSON.parse(req.body.thing);
+		thing = {
+			_id: req.params.id,
+			title: req.body.thing.title,
+			description: req.body.thing.description,
+			imageUrl: `${url}/images/${req.file.filename}`,
+			price: req.body.thing.price,
+			userId: req.body.thing.userId 
+		};
+	} else {
+		thing = {
+			_id: req.params.id,
+			title: req.body.title,
+			description: req.body.description,
+			imageUrl: req.body.imageUrl,
+			price: req.body.price,
+			userId: req.body.userId
+		};
+	}
+	
 	Thing.updateOne({ _id: req.params.id }, thing)
 		.then(() => {
 			res.status(201).json({
