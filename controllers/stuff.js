@@ -1,4 +1,5 @@
 const Thing = require('../models/thing');
+const fs = require('fs');
 
 exports.createThing = (req, res, next) => {
 	const url = `${req.protocol}://${req.get('host')}`;
@@ -74,15 +75,21 @@ exports.modifyThing = (req, res, next) => {
 }
 
 exports.deleteThing = (req, res, next) => {
-	Thing.deleteOne({ _id: req.params.id })
-		.then(() => {
-			res.status(200).json({
-				message: 'thing deleted!'
-			});
-		})
-		.catch((error) => {
-			res.status(400).json({
-				error: error
+	Thing.findOne({_id: req.params.id})
+		.then((thing) => {
+			const filename = thing.imageUrl.split('/images/')[1];
+			fs.unlink(`images/${filename}`, () => {
+				Thing.deleteOne({ _id: req.params.id })
+					.then(() => {
+						res.status(200).json({
+							message: 'thing deleted!'
+						});
+					})
+					.catch((error) => {
+						res.status(400).json({
+							error: error
+						});
+					});
 			});
 		});
 };
